@@ -19,12 +19,10 @@ public class SecurityConfig {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth
             .inMemoryAuthentication()
+            
                 .withUser("user").password("password").roles("USER")
                 .and()
                 .withUser("admin").password("admin").roles("USER", "ADMIN")
-//                .and()
-//                .and()
-//                .
                 ;
     }
 }
