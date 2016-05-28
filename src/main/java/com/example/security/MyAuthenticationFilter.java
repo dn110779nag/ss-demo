@@ -26,10 +26,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * http://shout.setfive.com/2015/11/02/spring-boot-authentication-with-custom-http-header/
+ *
  * @author user
  */
 public class MyAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
@@ -41,8 +44,8 @@ public class MyAuthenticationFilter extends AbstractAuthenticationProcessingFilt
         super(defaultFilterProcessesUrl);
         this.authenticationManager = authenticationManager;
         super.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher(defaultFilterProcessesUrl));
-//        setAuthenticationManager(new NoOpAuthenticationManager());
-//        setAuthenticationSuccessHandler(new TokenSimpleUrlAuthenticationSuccessHandler());
+        setAuthenticationManager(new NoOpAuthenticationManager());
+        setAuthenticationSuccessHandler(new SavedRequestAwareAuthenticationSuccessHandler());
     }
 
     public final String HEADER_SECURITY_TOKEN = "My-Rest-Token";
@@ -60,9 +63,9 @@ public class MyAuthenticationFilter extends AbstractAuthenticationProcessingFilt
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, 
-            HttpServletResponse response, 
-            FilterChain chain, 
+    protected void successfulAuthentication(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
         super.successfulAuthentication(request, response, chain, authResult);
         chain.doFilter(request, response);
@@ -70,25 +73,10 @@ public class MyAuthenticationFilter extends AbstractAuthenticationProcessingFilt
 
     // This method makes some validation depend on your application logic
     private Authentication parseToken(String tokenString) {
-        User u = map.get(tokenString);
-        logger.info("u={}",u);
-        if (u != null) {
-            List<GrantedAuthority> list = u.getRoles().stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-            return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(u.getUsername(), u.getUsername(), list));
-        } else {
-            return null;
-        }
 
-    }
+        return authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(tokenString, tokenString));
 
-    private Map<String, User> map = new HashMap<>();
-
-    {
-        map.put("user", new User("user", "USER"));
-        map.put("admin", new User("admin", "USER", "ADMIN"));
     }
 
 }

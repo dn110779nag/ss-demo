@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Alex
  */
 @RestController
-public class InndexController {
+public class IndexController {
     
     @RequestMapping("/")
     @PreAuthorize("hasRole('ADMIN')")
